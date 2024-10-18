@@ -165,7 +165,6 @@ private fun AndroidLegacyTextView(html: String) {
         AndroidView(
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.Center)
                 .padding(10.dp),
             factory = { ctx ->
                 TextView(ctx).apply {
@@ -174,7 +173,6 @@ private fun AndroidLegacyTextView(html: String) {
                         ViewGroup.LayoutParams.WRAP_CONTENT
                     )
 
-                    gravity = Gravity.CENTER
                     setLinkTextColor(ContextCompat.getColorStateList(context, R.color.blue))
                     text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
@@ -205,11 +203,9 @@ private fun HtmlTextItem(context: Context, html: String) {
     ) {
         HtmlText(
             modifier = Modifier
-                .align(Alignment.Center)
                 .padding(10.dp),
             text = html,
             style = TextStyle(
-                textAlign = TextAlign.Center,
                 color = colorResource(id = R.color.text),
                 fontWeight = FontWeight.Normal
             ),

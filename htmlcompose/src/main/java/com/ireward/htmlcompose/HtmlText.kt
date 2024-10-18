@@ -2,7 +2,11 @@ package com.ireward.htmlcompose
 
 import android.text.Spanned
 import android.text.style.*
+import android.text.style.ParagraphStyle
 import android.widget.TextView
+import androidx.compose.foundation.layout.Arrangement.spacedBy
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -14,8 +18,10 @@ import androidx.compose.ui.text.*
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.HtmlCompat
+import androidx.core.text.getSpans
 
 private const val URL_TAG = "url_tag"
 
@@ -26,7 +32,6 @@ fun HtmlText(
     style: TextStyle = TextStyle.Default,
     softWrap: Boolean = true,
     overflow: TextOverflow = TextOverflow.Clip,
-    maxLines: Int = Int.MAX_VALUE,
     onTextLayout: (TextLayoutResult) -> Unit = {},
     linkClicked: ((String) -> Unit)? = null,
     fontSize: TextUnit = 14.sp,
@@ -37,37 +42,58 @@ fun HtmlText(
     ),
     customSpannedHandler: ((Spanned) -> AnnotatedString)? = null
 ) {
-    val spanned = remember (text) { HtmlCompat.fromHtml(text, flags) }
+    Column(modifier, verticalArrangement = spacedBy(0.dp)) {
+        val spans = remember(text) {
+            HtmlCompat.fromHtml(text, flags).splitParagraphs()
+        }
 
-    val content = spanned.toAnnotated(fontSize, URLSpanStyle, customSpannedHandler)
-    if (linkClicked != null) {
-        ClickableText(
-            modifier = modifier,
-            text = content,
-            style = style,
-            softWrap = softWrap,
-            overflow = overflow,
-            maxLines = maxLines,
-            onTextLayout = onTextLayout,
-            onClick = {
-                content
-                    .getStringAnnotations(URL_TAG, it, it)
-                    .firstOrNull()
-                    ?.let { stringAnnotation -> linkClicked(stringAnnotation.item) }
+        spans.forEach { spanned ->
+            val content = spanned.toAnnotated(fontSize, URLSpanStyle, customSpannedHandler)
+            val pstyles = spanned.getSpans<ParagraphStyle>()
+
+            if (linkClicked != null) {
+                ClickableText(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .paragraph(pstyles),
+                    text = content,
+                    style = style.fromSpans(pstyles),
+                    softWrap = softWrap,
+                    overflow = overflow,
+                    onTextLayout = onTextLayout,
+                    onClick = {
+                        content
+                            .getStringAnnotations(URL_TAG, it, it)
+                            .firstOrNull()
+                            ?.let { stringAnnotation -> linkClicked(stringAnnotation.item) }
+                    }
+                )
+            } else {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .paragraph(pstyles),
+                    text = content,
+                    style = style.fromSpans(pstyles),
+                    softWrap = softWrap,
+                    overflow = overflow,
+                    onTextLayout = onTextLayout
+                )
             }
-        )
-    } else {
-        Text(
-            modifier = modifier,
-            text = content,
-            style = style,
-            softWrap = softWrap,
-            overflow = overflow,
-            maxLines = maxLines,
-            onTextLayout = onTextLayout
-        )
+        }
     }
+}
 
+private fun Spanned.splitParagraphs(): List<Spanned> = buildList {
+    val len = length
+    val text = this@splitParagraphs
+    var i = 0
+
+    while(i < len) {
+        val next = text.nextSpanTransition(i, len, ParagraphStyle::class.java)
+        add(text.subSequence(i, next) as Spanned)
+        i = next
+    }
 }
 
 @Composable

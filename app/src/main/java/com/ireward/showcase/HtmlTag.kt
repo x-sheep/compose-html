@@ -17,6 +17,13 @@ enum class HtmlTag(val tag: String, val content: String) {
         tag = "<s>",
         content = "This is a <s>s element</s>"
     ),
+    CENTER(
+        tag = "text-align",
+        content = """
+            <p>This paragraph is on the left</p>
+            <p style="text-align: center;">This paragraph is centered</p>
+        """.trimIndent()
+    ),
     DEL(
         tag = "<del>",
         content = "This is a <del>del element</del>"
