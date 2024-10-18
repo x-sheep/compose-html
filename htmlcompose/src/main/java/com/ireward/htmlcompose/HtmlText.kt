@@ -8,11 +8,14 @@ import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.style.TextDecoration
@@ -43,6 +46,7 @@ fun HtmlText(
     customSpannedHandler: ((Spanned) -> AnnotatedString)? = null
 ) {
     Column(modifier, verticalArrangement = spacedBy(0.dp)) {
+        val contentColor = style.color.takeOrElse { LocalContentColor.current }
         val spans = remember(text) {
             HtmlCompat.fromHtml(text, flags).splitParagraphs()
         }
@@ -55,7 +59,7 @@ fun HtmlText(
                 ClickableText(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .paragraph(pstyles),
+                        .paragraph(pstyles, fontSize, contentColor),
                     text = content,
                     style = style.fromSpans(pstyles),
                     softWrap = softWrap,
@@ -72,7 +76,7 @@ fun HtmlText(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .paragraph(pstyles),
+                        .paragraph(pstyles, fontSize, contentColor),
                     text = content,
                     style = style.fromSpans(pstyles),
                     softWrap = softWrap,
