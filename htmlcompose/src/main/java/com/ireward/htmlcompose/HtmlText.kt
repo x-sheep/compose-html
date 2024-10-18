@@ -35,6 +35,7 @@ fun HtmlText(
     style: TextStyle = TextStyle.Default,
     softWrap: Boolean = true,
     overflow: TextOverflow = TextOverflow.Clip,
+    maxLines: Int = Int.MAX_VALUE,
     onTextLayout: (TextLayoutResult) -> Unit = {},
     linkClicked: ((String) -> Unit)? = null,
     fontSize: TextUnit = 14.sp,
@@ -47,9 +48,10 @@ fun HtmlText(
 ) {
     Column(modifier, verticalArrangement = spacedBy(0.dp)) {
         val contentColor = style.color.takeOrElse { LocalContentColor.current }
-        val spans = remember(text) {
+        val allSpans = remember(text) {
             HtmlCompat.fromHtml(text, flags).splitParagraphs()
         }
+        val spans = if(maxLines == Int.MAX_VALUE) allSpans else allSpans.take(1)
 
         spans.forEach { spanned ->
             val content = spanned.toAnnotated(fontSize, URLSpanStyle, customSpannedHandler)
@@ -64,6 +66,7 @@ fun HtmlText(
                     style = style.fromSpans(pstyles),
                     softWrap = softWrap,
                     overflow = overflow,
+                    maxLines = maxLines,
                     onTextLayout = onTextLayout,
                     onClick = {
                         content
@@ -81,6 +84,7 @@ fun HtmlText(
                     style = style.fromSpans(pstyles),
                     softWrap = softWrap,
                     overflow = overflow,
+                    maxLines = maxLines,
                     onTextLayout = onTextLayout
                 )
             }
