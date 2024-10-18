@@ -6,6 +6,7 @@ import android.widget.TextView
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -36,7 +37,9 @@ fun HtmlText(
     ),
     customSpannedHandler: ((Spanned) -> AnnotatedString)? = null
 ) {
-    val content = text.asHTML(fontSize, flags, URLSpanStyle, customSpannedHandler)
+    val spanned = remember (text) { HtmlCompat.fromHtml(text, flags) }
+
+    val content = spanned.toAnnotated(fontSize, URLSpanStyle, customSpannedHandler)
     if (linkClicked != null) {
         ClickableText(
             modifier = modifier,
@@ -73,13 +76,12 @@ private fun linkTextColor() = Color(
 )
 
 @Composable
-private fun String.asHTML(
+private fun Spanned.toAnnotated(
     fontSize: TextUnit,
-    flags: Int,
     URLSpanStyle: SpanStyle,
     customSpannedHandler: ((Spanned) -> AnnotatedString)? = null
 ) = buildAnnotatedString {
-    val spanned = HtmlCompat.fromHtml(this@asHTML, flags)
+    val spanned = this@toAnnotated
     val spans = spanned.getSpans(0, spanned.length, Any::class.java)
 
     if (customSpannedHandler != null) {
